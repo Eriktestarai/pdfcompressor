@@ -7,6 +7,7 @@ import shutil
 from pathlib import Path
 from pdf_compressor import compress_pdf
 from booklet_creator import create_booklet_from_gemini
+from spread_splitter import split_gemini_spreads
 import uuid
 
 app = FastAPI(title="PDF Compressor")
@@ -196,6 +197,67 @@ async def convert_to_booklet(file: UploadFile = File(...)):
         if output_path.exists():
             output_path.unlink()
         raise HTTPException(status_code=500, detail=f"Booklet creation failed: {str(e)}")
+
+
+@app.post("/split-spreads")
+async def split_spreads(file: UploadFile = File(...)):
+    """
+    Upload a Gemini Storybook PDF and split spreads into individual pages.
+    Like StoryJar: one image OR text per A4 page.
+    Files are automatically deleted after download for security.
+    """
+    if not file.filename.endswith('.pdf'):
+        raise HTTPException(status_code=400, detail="File must be a PDF")
+
+    # Generate unique filename using UUID for security
+    unique_id = str(uuid.uuid4())
+    upload_filename = f"{unique_id}_upload.pdf"
+    output_filename = f"{unique_id}_split.pdf"
+
+    upload_path = UPLOAD_DIR / upload_filename
+    output_path = OUTPUT_DIR / output_filename
+
+    # Save uploaded file
+    with upload_path.open("wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+
+    try:
+        # Split spreads
+        stats = split_gemini_spreads(str(upload_path), str(output_path), quality=85)
+
+        # Get file sizes for reporting
+        original_size = upload_path.stat().st_size
+        split_size = output_path.stat().st_size
+        reduction = 100 * (1 - split_size / original_size)
+
+        # Clean up upload immediately
+        upload_path.unlink()
+
+        # Return info with original filename for user download
+        original_name = file.filename.replace('.pdf', '')
+        download_filename = f"{original_name}_split.pdf"
+
+        return {
+            "message": "Spreads split successfully",
+            "filename": output_filename,  # UUID filename for security
+            "download_url": f"/download/{output_filename}?name={download_filename}",
+            "stats": {
+                "original_size_mb": round(original_size / (1024 * 1024), 2),
+                "split_size_mb": round(split_size / (1024 * 1024), 2),
+                "reduction_percent": round(reduction, 1),
+                "original_pages": stats["original_pages"],
+                "output_pages": stats["output_pages"],
+                "format": stats["format"]
+            }
+        }
+
+    except Exception as e:
+        # Clean up on error
+        if upload_path.exists():
+            upload_path.unlink()
+        if output_path.exists():
+            output_path.unlink()
+        raise HTTPException(status_code=500, detail=f"Spread splitting failed: {str(e)}")
 
 
 @app.delete("/cleanup/{filename}")

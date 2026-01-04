@@ -8,7 +8,7 @@ function App() {
   const [downloadUrl, setDownloadUrl] = useState(null)
   const [error, setError] = useState(null)
   const [stats, setStats] = useState(null)
-  const [mode, setMode] = useState('compress') // 'compress' or 'booklet'
+  const [mode, setMode] = useState('compress') // 'compress', 'booklet', or 'split'
 
   const handleDragOver = (e) => {
     e.preventDefault()
@@ -54,7 +54,10 @@ function App() {
     const formData = new FormData()
     formData.append('file', file)
 
-    const endpoint = mode === 'booklet' ? '/convert-to-booklet' : '/convert'
+    const endpoint =
+      mode === 'booklet' ? '/convert-to-booklet' :
+      mode === 'split' ? '/split-spreads' :
+      '/convert'
 
     try {
       const response = await fetch(`https://pdfcompressor-backend.onrender.com${endpoint}`, {
@@ -105,6 +108,12 @@ function App() {
                 🗜️ Komprimera
               </button>
               <button
+                className={`mode-btn ${mode === 'split' ? 'active' : ''}`}
+                onClick={() => setMode('split')}
+              >
+                ✂️ Dela Spreads
+              </button>
+              <button
                 className={`mode-btn ${mode === 'booklet' ? 'active' : ''}`}
                 onClick={() => setMode('booklet')}
               >
@@ -115,6 +124,8 @@ function App() {
             <div className="mode-description">
               {mode === 'compress' ? (
                 <p>Minska PDF-filstorlek med upp till 99%</p>
+              ) : mode === 'split' ? (
+                <p>Dela Gemini Storybook spreads → en bild/text per A4-sida (som StoryJar)</p>
               ) : (
                 <p>Skapa en utskriftsklar booklet från Gemini Storybook (A4 landscape)</p>
               )}
@@ -175,11 +186,15 @@ function App() {
                 {isProcessing ? (
                   <>
                     <div className="spinner"></div>
-                    {mode === 'booklet' ? 'Skapar booklet...' : 'Komprimerar...'}
+                    {mode === 'booklet' ? 'Skapar booklet...' :
+                     mode === 'split' ? 'Delar spreads...' :
+                     'Komprimerar...'}
                   </>
                 ) : (
                   <>
-                    {mode === 'booklet' ? '📖 Skapa Booklet' : '✨ Komprimera PDF'}
+                    {mode === 'booklet' ? '📖 Skapa Booklet' :
+                     mode === 'split' ? '✂️ Dela Spreads' :
+                     '✨ Komprimera PDF'}
                   </>
                 )}
               </button>
@@ -190,8 +205,16 @@ function App() {
             <svg className="icon success-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <h2>{mode === 'booklet' ? 'Booklet Skapad! 📖' : 'PDF Komprimerad! 🎉'}</h2>
-            <p>{mode === 'booklet' ? 'Din booklet är redo för utskrift' : 'Din PDF har komprimerats till en mindre storlek'}</p>
+            <h2>
+              {mode === 'booklet' ? 'Booklet Skapad! 📖' :
+               mode === 'split' ? 'Spreads Uppdelade! ✂️' :
+               'PDF Komprimerad! 🎉'}
+            </h2>
+            <p>
+              {mode === 'booklet' ? 'Din booklet är redo för utskrift' :
+               mode === 'split' ? 'Spreads uppdelade - redo för ditt booklet-program!' :
+               'Din PDF har komprimerats till en mindre storlek'}
+            </p>
             {stats && (
               <div className="stats">
                 {mode === 'booklet' ? (
@@ -199,6 +222,13 @@ function App() {
                     <p>📦 {stats.original_size_mb} MB → {stats.booklet_size_mb} MB</p>
                     <p>📄 {stats.pages} sidor → {stats.sheets} ark (dubbelsidig)</p>
                     <p>📖 {stats.format}</p>
+                    <p>🔽 {stats.reduction_percent}% minskning</p>
+                  </>
+                ) : mode === 'split' ? (
+                  <>
+                    <p>📦 {stats.original_size_mb} MB → {stats.split_size_mb} MB</p>
+                    <p>📄 {stats.original_pages} spreads → {stats.output_pages} individuella sidor</p>
+                    <p>📏 {stats.format}</p>
                     <p>🔽 {stats.reduction_percent}% minskning</p>
                   </>
                 ) : (
@@ -215,10 +245,14 @@ function App() {
                 download
                 className="download-btn"
               >
-                {mode === 'booklet' ? '📥 Ladda ner booklet' : '📥 Ladda ner komprimerad PDF'}
+                {mode === 'booklet' ? '📥 Ladda ner booklet' :
+                 mode === 'split' ? '📥 Ladda ner uppdelad PDF' :
+                 '📥 Ladda ner komprimerad PDF'}
               </a>
               <button className="new-conversion-btn" onClick={handleReset}>
-                {mode === 'booklet' ? 'Skapa en till' : 'Komprimera en till'}
+                {mode === 'booklet' ? 'Skapa en till' :
+                 mode === 'split' ? 'Dela en till' :
+                 'Komprimera en till'}
               </button>
             </div>
           </div>
