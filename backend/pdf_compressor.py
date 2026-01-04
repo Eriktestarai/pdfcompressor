@@ -1,7 +1,6 @@
 """
-Simple PDF compressor - just reduces file size without changing layout.
-Perfect for Gemini Storybook PDFs before converting to booklet with other tools.
-Uses PyMuPDF (fitz) - no system dependencies required!
+Simple PDF compressor - reduces file size by rendering pages to compressed images.
+Works with any PDF file. Uses PyMuPDF (fitz) - no system dependencies required!
 """
 import fitz  # PyMuPDF
 from PIL import Image

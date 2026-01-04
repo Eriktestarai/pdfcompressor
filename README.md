@@ -1,21 +1,23 @@
-# 🗜️ Gemini PDF Komprimering
+# 🗜️ PDF Komprimering
 
-En webbapplikation som komprimerar Google Gemini Storybook-PDF:er till mycket mindre filstorlekar.
+En enkel och säker webbapplikation som komprimerar PDF:er till mycket mindre filstorlekar.
 
 ## 🎯 Syfte
 
-När du laddar ner en storybook från Google Gemini's Storybook-funktion får du en PDF som ofta är 200+ MB stor. Detta verktyg komprimerar PDF:en till under 3 MB (ca 98-99% minskning) samtidigt som alla sidor och bilder bevaras.
+Komprimera stora PDF-filer snabbt och enkelt. Verktyget kan minska filstorleken med upp till 99% samtidigt som alla sidor och visuellt innehåll bevaras.
 
-**Tidigare:** Använde Storyjar.app som mellanhand
-**Nu:** Egen lösning för komprimering - använd sedan annat verktyg för booklet-konvertering!
+**Exempel:** 200 MB → 2-3 MB (98-99% minskning)
+
+*Ursprungligen utvecklad för Google Gemini Storybook-PDF:er, men fungerar med vilken PDF som helst.*
 
 ## ✨ Funktioner
 
 - 📤 **Drag-and-drop** eller filuppladdning
-- 🗜️ **Komprimerar PDF** från 200+ MB till 2-3 MB
+- 🗜️ **Kraftfull komprimering** - reducerar stora PDF:er med upp till 99%
 - 🖼️ **Bevarar alla sidor** i original ordning
 - 📊 **Visar statistik** - original storlek, komprimerad storlek, minskning i %
 - 💾 **Ladda ner direkt** som komprimerad PDF
+- 🔒 **Säker** - filer raderas automatiskt efter nedladdning
 - 🎨 **Snygg UI** med modern design
 
 ## 🏗️ Arkitektur
@@ -73,39 +75,44 @@ Frontend körs på: `http://localhost:3000`
 
 1. **Starta både backend och frontend**
 2. **Öppna** `http://localhost:3000` i din webbläsare
-3. **Ladda upp** din Gemini Storybook-PDF (drag-and-drop eller klicka)
+3. **Ladda upp** din PDF (drag-and-drop eller klicka)
 4. **Klicka** på "Komprimera PDF"
 5. **Ladda ner** din komprimerade PDF
-6. **(Valfritt)** Använd annat verktyg för att konvertera till booklet-format
+
+**Publikt tillgänglig:** https://pdfcompressor3.netlify.app/
 
 ## 🔧 Hur det fungerar
 
-### PDF Compression
+### PDF Komprimering
 
-1. **Läser** Gemini's PDF med PyPDF2
-2. **Extraherar den största bilden** från varje sida
-3. **Komprimerar bilderna**:
+1. **Renderar** varje PDF-sida till en bild med PyMuPDF
+2. **Komprimerar bilderna**:
    - Reducerar upplösning till max 2000px (behåller aspect ratio)
    - Applicerar JPEG-komprimering (quality=85)
-   - Optimerar PNG-format
-4. **Skapar ny PDF** med ReportLab:
-   - Samma sidstorlek som original
-   - En komprimerad bild per sida
-   - Bevarar ordning och antal sidor
-5. **Resultat**: 98-99% minskning i filstorlek (200MB → 2-3MB)
+   - Optimerar för minimal filstorlek
+3. **Skapar ny PDF**:
+   - Samma sidstorlek och antal sidor som original
+   - Komprimerade bilder med deflate-kompression
+   - Garbage collection för ytterligare storleksreducering
+4. **Säkerhet**: Automatisk radering av filer efter nedladdning
+5. **Resultat**: Upp till 99% minskning i filstorlek
 
 ### Tech Stack
 
 **Backend:**
 - FastAPI - Modern Python web framework
-- PyPDF2 - PDF läsning
-- ReportLab - PDF skapande
-- Pillow - Bildhantering
+- PyMuPDF (fitz) - PDF rendering och komprimering
+- Pillow - Bildbehandling och optimering
+- UUID - Säkra filnamn
 
 **Frontend:**
 - React - UI framework
-- Vite - Build tool
+- Vite - Build tool & hot reload
 - Modern CSS - Gradient design
+
+**Deployment:**
+- Backend: Render (https://pdfcompressor-backend.onrender.com)
+- Frontend: Netlify (https://pdfcompressor3.netlify.app)
 
 ## 🎨 Anpassningar
 
@@ -143,8 +150,8 @@ Editera `frontend/src/App.css` för att anpassa färger, animationer, etc.
 - Kontrollera att port 3000 inte redan används
 
 ### PDF komprimering misslyckas
-- Kontrollera att PDF:en är från Gemini Storybook
-- Se till att PDF:en innehåller bilder (texten extraheras inte)
+- Kontrollera att filen är en giltig PDF
+- Se till att PDF:en inte är korrupt
 - Kolla backend-loggar för felmeddelanden
 - Stora PDF:er (200+ MB) kan ta 1-2 minuter att komprimera
 
@@ -156,14 +163,21 @@ Editera `frontend/src/App.css` för att anpassa färger, animationer, etc.
 
 Fri att använda och modifiera!
 
-## 🙏 Credits
+## 🔒 Säkerhet
 
-Skapad för att komprimera stora Google Gemini Storybook-PDF:er. Använd sedan valfritt verktyg (t.ex. online2pdf.com) för att konvertera den komprimerade PDF:en till booklet-format.
+- **UUID-filnamn**: Slumpmässiga filnamn gör det omöjligt att gissa URL:er
+- **Automatisk radering**: Filer raderas direkt efter nedladdning
+- **Ephemeral storage**: Render's container-omstarter rensar temp-mappen
+- **Ingen persistent lagring**: Inga filer sparas permanent
 
 ## 📊 Testresultat
 
-**Test med verklig Gemini Storybook:**
+**Exempel på komprimering:**
 - Original: 201 MB (10 sidor)
 - Komprimerad: 2.5 MB (10 sidor)
 - Minskning: 98.8%
-- Tid: ~30 sekunder
+- Processtid: ~30 sekunder
+
+## 🙏 Om projektet
+
+Ursprungligen utvecklat för att komprimera stora Google Gemini Storybook-PDF:er, men fungerar utmärkt för alla typer av PDF-filer som behöver reduceras i storlek.

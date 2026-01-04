@@ -8,7 +8,7 @@ from pathlib import Path
 from pdf_compressor import compress_pdf
 import uuid
 
-app = FastAPI(title="Gemini Booklet Maker")
+app = FastAPI(title="PDF Compressor")
 
 # CORS setup for local development and production
 app.add_middleware(
@@ -37,13 +37,13 @@ class URLRequest(BaseModel):
 
 @app.get("/")
 def read_root():
-    return {"message": "Gemini Booklet Maker API", "status": "running"}
+    return {"message": "PDF Compressor API", "status": "running"}
 
 
 @app.post("/convert")
 async def convert_pdf(file: UploadFile = File(...)):
     """
-    Upload a Gemini Storybook PDF and compress it to reduce file size.
+    Upload a PDF and compress it to reduce file size.
     Files are automatically deleted after download for security.
     """
     if not file.filename.endswith('.pdf'):
@@ -132,15 +132,8 @@ async def download_file(filename: str, name: str = None, background_tasks: Backg
     )
 
 
-# URL-based conversion disabled - not working reliably
-# User will download PDF from Gemini first, then compress it
-#
-# @app.post("/convert-from-url")
-# async def convert_from_url(request: URLRequest):
-#     """
-#     Fetch a Gemini Storybook from a URL and convert it to booklet format.
-#     """
-#     raise HTTPException(status_code=501, detail="URL conversion temporarily disabled. Please download the PDF from Gemini and upload it directly.")
+# URL-based conversion disabled - not implemented
+# Users should download their PDF first, then upload it for compression
 
 
 @app.delete("/cleanup/{filename}")

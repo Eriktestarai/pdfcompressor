@@ -1,24 +1,30 @@
-# Gemini Booklet Maker - Claude Code Project
+# PDF Compressor - Claude Code Project
 
-> A web application that converts Google Gemini Storybook PDFs into booklet format with images on the left and text on the right.
+> A simple and secure web application that compresses PDF files to reduce file size by up to 99%.
 
 ## Project Overview
 
-**Purpose:** Eliminate dependency on third-party service (Storyjar.app) by creating own PDF conversion tool.
+**Purpose:** Provide a fast, secure PDF compression service with automatic file cleanup.
 
 **Stack:**
-- Backend: Python 3.x + FastAPI
+- Backend: Python 3.11 + FastAPI
 - Frontend: React + Vite
-- PDF Processing: PyPDF2 (reading) + ReportLab (creation) + Pillow (images)
+- PDF Processing: PyMuPDF (fitz) + Pillow (image optimization)
+- Security: UUID filenames + auto-delete after download
+
+**Deployment:**
+- Backend: Render (https://pdfcompressor-backend.onrender.com)
+- Frontend: Netlify (https://pdfcompressor3.netlify.app)
 
 ## Project Structure
 
 ```
-gemini-booklet-maker/
+pdf-compressor/
 ├── backend/
 │   ├── main.py              # FastAPI app with endpoints
-│   ├── pdf_processor.py     # PDF extraction and booklet creation
+│   ├── pdf_compressor.py    # PDF compression logic (PyMuPDF)
 │   ├── requirements.txt     # Python dependencies
+│   ├── runtime.txt          # Python version for Render
 │   └── temp/               # Auto-created: uploaded & output PDFs
 └── frontend/
     ├── src/
@@ -51,22 +57,26 @@ npm run dev  # Runs on http://localhost:3000
 
 ### Making Changes
 
-**Backend (PDF Processing):**
+**Backend (PDF Compression):**
 - Main API: `backend/main.py:*`
-- PDF logic: `backend/pdf_processor.py:*`
-- Test changes: Upload a PDF through frontend
+- Compression logic: `backend/pdf_compressor.py:*`
+- Test changes: Upload a PDF through frontend or production site
 
 **Frontend (UI):**
 - Main component: `frontend/src/App.jsx:*`
 - Styling: `frontend/src/App.css:*`
 - See changes immediately (Vite hot reload)
 
+**Deployment:**
+- Push to GitHub → Netlify auto-deploys frontend
+- Backend on Render redeploys automatically from GitHub
+
 ## Key Files & Their Purposes
 
 | File | Purpose | When to Edit |
 |------|---------|--------------|
-| `backend/main.py` | API endpoints, file handling | Add new endpoints, change CORS |
-| `backend/pdf_processor.py` | PDF extraction & creation | Change layout, page size, formatting |
+| `backend/main.py` | API endpoints, file handling, security | Add endpoints, change CORS, modify cleanup |
+| `backend/pdf_compressor.py` | PDF compression with PyMuPDF | Adjust quality, resolution, compression |
 | `frontend/src/App.jsx` | UI logic, upload handling | Change UI flow, add features |
 | `frontend/src/App.css` | Styling & animations | Change design, colors, layout |
 
@@ -94,36 +104,35 @@ npm run build
 
 **End-to-end test:**
 1. Start both backend and frontend
-2. Upload a test PDF from Gemini
-3. Verify booklet downloads correctly
-4. Check layout in PDF viewer
+2. Upload a test PDF (any PDF)
+3. Verify compression stats are shown
+4. Download and check file size reduction
+5. Verify file quality is acceptable
 
 ## Common Tasks
 
-### Change Page Size
-Edit `backend/pdf_processor.py`:
+### Adjust Compression Quality
+Edit `backend/pdf_compressor.py` or `backend/main.py:66`:
 ```python
-from reportlab.lib.pagesizes import A4  # or letter, etc.
-create_booklet_pdf(..., page_size=A4)
+# Higher quality (larger file)
+compress_pdf(input_path, output_path, quality=95, max_dimension=3000)
+
+# Lower quality (smaller file)
+compress_pdf(input_path, output_path, quality=70, max_dimension=1500)
+
+# Current default (recommended)
+compress_pdf(input_path, output_path, quality=85, max_dimension=2000)
 ```
 
-### Adjust Image/Text Ratio
-Edit `backend/pdf_processor.py` in `create_booklet_pdf()`:
-```python
-# Current: 50/50 split
-image_width = (width / 2) - (margin * 1.5)
-text_width = (width / 2) - (margin * 1.5)
+**Parameters:**
+- `quality`: JPEG quality 1-100 (higher = better quality, larger file)
+- `max_dimension`: Max width/height in pixels (images scaled down if larger)
 
-# Example: 60/40 split (more space for images)
-image_width = (width * 0.6) - (margin * 1.5)
-text_width = (width * 0.4) - (margin * 1.5)
-```
-
-### Change Text Styling
-Edit `backend/pdf_processor.py` in `create_booklet_pdf()`:
+### Change Compression Settings
+Edit `backend/pdf_compressor.py:19-20`:
 ```python
-text_obj.setFont("Helvetica", 12)  # Font name, size
-text_obj.setLeading(16)  # Line spacing
+mat = fitz.Matrix(2.0, 2.0)  # 144 DPI rendering
+# Increase for higher quality: fitz.Matrix(3.0, 3.0)  # 216 DPI
 ```
 
 ### Customize UI Colors
@@ -143,36 +152,53 @@ background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
 - **Auto-generated:** `backend/temp/`, `frontend/dist/`, `node_modules/`
 - **Don't commit:** PDFs, virtual environments, node_modules
 
-### PDF Processing Details
-- Uses PyPDF2 to extract images and text from source PDF
-- Each image is paired with corresponding text block
-- ReportLab creates new PDF with custom layout
-- Handles missing images or text gracefully
+### PDF Compression Details
+- Uses PyMuPDF to render each page to high-quality image
+- Compresses images with Pillow (JPEG quality 85, max 2000px)
+- Creates new PDF with compressed images and deflate compression
+- Garbage collection for additional size reduction
+- Result: Up to 99% file size reduction
+
+### Security Features
+- **UUID filenames**: Random UUIDs prevent file URL guessing
+- **Auto-delete**: Files deleted immediately after download (BackgroundTasks)
+- **Ephemeral storage**: Render clears temp files on container restart
+- **No persistent storage**: Files never saved permanently
+- **CORS protection**: Only allowed origins can access API
 
 ### CORS Configuration
 Backend allows requests from:
 - `http://localhost:3000` (Vite dev server)
 - `http://localhost:5173` (Alternative Vite port)
+- `https://pdfcompressor3.netlify.app` (Production)
 
-Add more origins in `backend/main.py` if needed.
+Add more origins in `backend/main.py:16-21` if needed.
 
 ### Error Handling
 - Backend validates PDF files before processing
 - Frontend shows user-friendly error messages
 - Temporary files are cleaned up on errors
+- Upload files deleted immediately after compression
 
-## Deployment Considerations
+## Deployment (Already Live)
 
-**Backend:**
-- Set environment variables for production URLs
-- Configure proper file size limits
-- Add file cleanup cron job for `temp/` directory
-- Use production ASGI server (Gunicorn + Uvicorn)
+**Backend (Render):**
+- Repository: https://github.com/Eriktestarai/pdfcompressor
+- Live URL: https://pdfcompressor-backend.onrender.com
+- Auto-deploys from GitHub main branch
+- Python version: 3.11.11 (runtime.txt)
+- Free tier: Spins down after 15 min inactivity
 
-**Frontend:**
-- Build with `npm run build`
-- Serve `dist/` folder with nginx or similar
-- Update API URL to production backend
+**Frontend (Netlify):**
+- Live URL: https://pdfcompressor3.netlify.app
+- Auto-deploys from GitHub main branch
+- Build command: `npm run build`
+- Publish directory: `dist`
+
+**To Update:**
+1. Make changes locally
+2. Commit and push to GitHub
+3. Netlify/Render auto-deploy within 1-2 minutes
 
 ## Swedish UI Text
 
