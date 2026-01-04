@@ -8,6 +8,7 @@ function App() {
   const [downloadUrl, setDownloadUrl] = useState(null)
   const [error, setError] = useState(null)
   const [stats, setStats] = useState(null)
+  const [mode, setMode] = useState('compress') // 'compress' or 'booklet'
 
   const handleDragOver = (e) => {
     e.preventDefault()
@@ -42,7 +43,7 @@ function App() {
     }
   }
 
-  const handleCompress = async () => {
+  const handleProcess = async () => {
     if (!file) return
 
     setIsProcessing(true)
@@ -53,15 +54,17 @@ function App() {
     const formData = new FormData()
     formData.append('file', file)
 
+    const endpoint = mode === 'booklet' ? '/convert-to-booklet' : '/convert'
+
     try {
-      const response = await fetch('https://pdfcompressor-backend.onrender.com/convert', {
+      const response = await fetch(`https://pdfcompressor-backend.onrender.com${endpoint}`, {
         method: 'POST',
         body: formData,
       })
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.detail || 'Komprimering misslyckades')
+        throw new Error(errorData.detail || 'Bearbetning misslyckades')
       }
 
       const data = await response.json()
@@ -94,6 +97,29 @@ function App() {
       <main>
         {!downloadUrl ? (
           <>
+            <div className="mode-selector">
+              <button
+                className={`mode-btn ${mode === 'compress' ? 'active' : ''}`}
+                onClick={() => setMode('compress')}
+              >
+                🗜️ Komprimera
+              </button>
+              <button
+                className={`mode-btn ${mode === 'booklet' ? 'active' : ''}`}
+                onClick={() => setMode('booklet')}
+              >
+                📖 Skapa Booklet
+              </button>
+            </div>
+
+            <div className="mode-description">
+              {mode === 'compress' ? (
+                <p>Minska PDF-filstorlek med upp till 99%</p>
+              ) : (
+                <p>Skapa en utskriftsklar booklet från Gemini Storybook (A4 landscape)</p>
+              )}
+            </div>
+
             <div
               className={`drop-zone ${isDragging ? 'dragging' : ''} ${file ? 'has-file' : ''}`}
               onDragOver={handleDragOver}
@@ -143,17 +169,17 @@ function App() {
             {file && (
               <button
                 className="convert-btn"
-                onClick={handleCompress}
+                onClick={handleProcess}
                 disabled={isProcessing}
               >
                 {isProcessing ? (
                   <>
                     <div className="spinner"></div>
-                    Komprimerar...
+                    {mode === 'booklet' ? 'Skapar booklet...' : 'Komprimerar...'}
                   </>
                 ) : (
                   <>
-                    ✨ Komprimera PDF
+                    {mode === 'booklet' ? '📖 Skapa Booklet' : '✨ Komprimera PDF'}
                   </>
                 )}
               </button>
@@ -164,12 +190,22 @@ function App() {
             <svg className="icon success-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <h2>PDF Komprimerad! 🎉</h2>
-            <p>Din PDF har komprimerats till en mindre storlek</p>
+            <h2>{mode === 'booklet' ? 'Booklet Skapad! 📖' : 'PDF Komprimerad! 🎉'}</h2>
+            <p>{mode === 'booklet' ? 'Din booklet är redo för utskrift' : 'Din PDF har komprimerats till en mindre storlek'}</p>
             {stats && (
               <div className="stats">
-                <p>📦 {stats.original_size_mb} MB → {stats.compressed_size_mb} MB</p>
-                <p>🔽 {stats.reduction_percent}% minskning i storlek</p>
+                {mode === 'booklet' ? (
+                  <>
+                    <p>📦 {stats.original_size_mb} MB → {stats.booklet_size_mb} MB</p>
+                    <p>📄 {stats.pages} sidor • {stats.format}</p>
+                    <p>🔽 {stats.reduction_percent}% minskning</p>
+                  </>
+                ) : (
+                  <>
+                    <p>📦 {stats.original_size_mb} MB → {stats.compressed_size_mb} MB</p>
+                    <p>🔽 {stats.reduction_percent}% minskning i storlek</p>
+                  </>
+                )}
               </div>
             )}
             <div className="action-buttons">
@@ -178,10 +214,10 @@ function App() {
                 download
                 className="download-btn"
               >
-                📥 Ladda ner komprimerad PDF
+                {mode === 'booklet' ? '📥 Ladda ner booklet' : '📥 Ladda ner komprimerad PDF'}
               </a>
               <button className="new-conversion-btn" onClick={handleReset}>
-                Komprimera en till
+                {mode === 'booklet' ? 'Skapa en till' : 'Komprimera en till'}
               </button>
             </div>
           </div>
