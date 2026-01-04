@@ -1,0 +1,27 @@
+# Python
+backend/venv/
+backend/__pycache__/
+backend/*.pyc
+backend/temp/
+*.py[cod]
+*$py.class
+
+# Node
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Environment
+.env
+.env.local
+
+# OS
+.DS_Store
+*.log
+
+# Debug/test files
+debug_screenshot.png
+test_*.pdf
+compressed_*.pdf
+backend/test_gemini.pdf
+backend/compressed_output.pdf

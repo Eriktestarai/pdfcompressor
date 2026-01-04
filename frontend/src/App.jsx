@@ -1,0 +1,195 @@
+import { useState } from 'react'
+import './App.css'
+
+function App() {
+  const [file, setFile] = useState(null)
+  const [isDragging, setIsDragging] = useState(false)
+  const [isProcessing, setIsProcessing] = useState(false)
+  const [downloadUrl, setDownloadUrl] = useState(null)
+  const [error, setError] = useState(null)
+  const [stats, setStats] = useState(null)
+
+  const handleDragOver = (e) => {
+    e.preventDefault()
+    setIsDragging(true)
+  }
+
+  const handleDragLeave = (e) => {
+    e.preventDefault()
+    setIsDragging(false)
+  }
+
+  const handleDrop = (e) => {
+    e.preventDefault()
+    setIsDragging(false)
+
+    const droppedFile = e.dataTransfer.files[0]
+    if (droppedFile && droppedFile.type === 'application/pdf') {
+      setFile(droppedFile)
+      setError(null)
+    } else {
+      setError('Vänligen ladda upp en PDF-fil')
+    }
+  }
+
+  const handleFileSelect = (e) => {
+    const selectedFile = e.target.files[0]
+    if (selectedFile && selectedFile.type === 'application/pdf') {
+      setFile(selectedFile)
+      setError(null)
+    } else {
+      setError('Vänligen välj en PDF-fil')
+    }
+  }
+
+  const handleCompress = async () => {
+    if (!file) return
+
+    setIsProcessing(true)
+    setError(null)
+    setDownloadUrl(null)
+    setStats(null)
+
+    const formData = new FormData()
+    formData.append('file', file)
+
+    try {
+      const response = await fetch('http://localhost:8000/convert', {
+        method: 'POST',
+        body: formData,
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.detail || 'Komprimering misslyckades')
+      }
+
+      const data = await response.json()
+      setDownloadUrl(`http://localhost:8000${data.download_url}`)
+      setStats(data.stats)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  const handleReset = () => {
+    setFile(null)
+    setDownloadUrl(null)
+    setError(null)
+    setStats(null)
+  }
+
+  return (
+    <div className="app">
+      <header>
+        <h1>🗜️ PDF Komprimering</h1>
+        <p>Komprimera din Gemini Storybook PDF till mindre storlek</p>
+      </header>
+
+      <main>
+        {!downloadUrl ? (
+          <>
+            <div
+              className={`drop-zone ${isDragging ? 'dragging' : ''} ${file ? 'has-file' : ''}`}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+            >
+              {file ? (
+                <div className="file-info">
+                  <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <p className="file-name">{file.name}</p>
+                  <p className="file-size">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                  <button className="change-file" onClick={handleReset}>
+                    Välj annan fil
+                  </button>
+                </div>
+              ) : (
+                <div className="drop-zone-content">
+                  <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                  </svg>
+                  <p>Dra och släpp din PDF här</p>
+                  <p className="or">eller</p>
+                  <label className="file-select-btn">
+                    Välj fil
+                    <input
+                      type="file"
+                      accept=".pdf"
+                      onChange={handleFileSelect}
+                      hidden
+                    />
+                  </label>
+                </div>
+              )}
+            </div>
+
+            {error && (
+              <div className="error">
+                <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {error}
+              </div>
+            )}
+
+            {file && (
+              <button
+                className="convert-btn"
+                onClick={handleCompress}
+                disabled={isProcessing}
+              >
+                {isProcessing ? (
+                  <>
+                    <div className="spinner"></div>
+                    Komprimerar...
+                  </>
+                ) : (
+                  <>
+                    ✨ Komprimera PDF
+                  </>
+                )}
+              </button>
+            )}
+          </>
+        ) : (
+          <div className="success">
+            <svg className="icon success-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <h2>PDF Komprimerad! 🎉</h2>
+            <p>Din PDF har komprimerats till en mindre storlek</p>
+            {stats && (
+              <div className="stats">
+                <p>📦 {stats.original_size_mb} MB → {stats.compressed_size_mb} MB</p>
+                <p>🔽 {stats.reduction_percent}% minskning i storlek</p>
+              </div>
+            )}
+            <div className="action-buttons">
+              <a
+                href={downloadUrl}
+                download
+                className="download-btn"
+              >
+                📥 Ladda ner komprimerad PDF
+              </a>
+              <button className="new-conversion-btn" onClick={handleReset}>
+                Komprimera en till
+              </button>
+            </div>
+          </div>
+        )}
+      </main>
+
+      <footer>
+        <p>Komprimera stora Gemini Storybook PDF:er • Konvertera sedan till booklet med annat verktyg</p>
+      </footer>
+    </div>
+  )
+}
+
+export default App
