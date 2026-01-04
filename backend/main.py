@@ -9,10 +9,15 @@ from pdf_compressor import compress_pdf
 
 app = FastAPI(title="Gemini Booklet Maker")
 
-# CORS setup for local development
+# CORS setup for local development and production
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:3001", "http://localhost:5173"],
+    allow_origins=[
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "http://localhost:5173",
+        "https://jade-macaron-aad9b8.netlify.app"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
