@@ -86,6 +86,9 @@ function App() {
       <header>
         <h1>🗜️ PDF Komprimering</h1>
         <p>Komprimera PDF:er snabbt och enkelt</p>
+        <div className="security-badge">
+          🔒 Dina filer raderas automatiskt efter nedladdning
+        </div>
       </header>
 
       <main>
