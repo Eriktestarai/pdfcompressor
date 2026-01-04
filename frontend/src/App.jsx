@@ -54,7 +54,7 @@ function App() {
     formData.append('file', file)
 
     try {
-      const response = await fetch('http://localhost:8000/convert', {
+      const response = await fetch('https://pdfcompressor-backend.onrender.com/convert', {
         method: 'POST',
         body: formData,
       })
@@ -65,7 +65,7 @@ function App() {
       }
 
       const data = await response.json()
-      setDownloadUrl(`http://localhost:8000${data.download_url}`)
+      setDownloadUrl(`https://pdfcompressor-backend.onrender.com${data.download_url}`)
       setStats(data.stats)
     } catch (err) {
       setError(err.message)
