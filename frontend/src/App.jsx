@@ -85,7 +85,7 @@ function App() {
     <div className="app">
       <header>
         <h1>🗜️ PDF Komprimering</h1>
-        <p>Komprimera din Gemini Storybook PDF till mindre storlek</p>
+        <p>Komprimera PDF:er snabbt och enkelt</p>
       </header>
 
       <main>
