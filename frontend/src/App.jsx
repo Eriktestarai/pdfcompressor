@@ -186,7 +186,7 @@ function App() {
       </main>
 
       <footer>
-        <p>Komprimera stora Gemini Storybook PDF:er • Konvertera sedan till booklet med annat verktyg</p>
+        <p>PDF Komprimering</p>
       </footer>
     </div>
   )
