@@ -16,7 +16,7 @@ app.add_middleware(
         "http://localhost:3000",
         "http://localhost:3001",
         "http://localhost:5173",
-        "https://jade-macaron-aad9b8.netlify.app"
+        "https://pdfcompressor3.netlify.app"
     ],
     allow_credentials=True,
     allow_methods=["*"],
