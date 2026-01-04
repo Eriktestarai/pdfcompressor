@@ -1,4 +1,4 @@
-from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi import FastAPI, File, UploadFile, HTTPException, BackgroundTasks
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -6,6 +6,7 @@ import os
 import shutil
 from pathlib import Path
 from pdf_compressor import compress_pdf
+import uuid
 
 app = FastAPI(title="Gemini Booklet Maker")
 
@@ -43,20 +44,25 @@ def read_root():
 async def convert_pdf(file: UploadFile = File(...)):
     """
     Upload a Gemini Storybook PDF and compress it to reduce file size.
+    Files are automatically deleted after download for security.
     """
     if not file.filename.endswith('.pdf'):
         raise HTTPException(status_code=400, detail="File must be a PDF")
 
+    # Generate unique filename using UUID for security
+    unique_id = str(uuid.uuid4())
+    upload_filename = f"{unique_id}_upload.pdf"
+    output_filename = f"{unique_id}_compressed.pdf"
+
+    upload_path = UPLOAD_DIR / upload_filename
+    output_path = OUTPUT_DIR / output_filename
+
     # Save uploaded file
-    upload_path = UPLOAD_DIR / file.filename
     with upload_path.open("wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
     try:
         # Compress the PDF
-        output_filename = f"compressed_{file.filename}"
-        output_path = OUTPUT_DIR / output_filename
-
         compress_pdf(str(upload_path), str(output_path), quality=85, max_dimension=2000)
 
         # Get file sizes for reporting
@@ -64,13 +70,17 @@ async def convert_pdf(file: UploadFile = File(...)):
         compressed_size = output_path.stat().st_size
         reduction = 100 * (1 - compressed_size / original_size)
 
-        # Clean up upload
+        # Clean up upload immediately
         upload_path.unlink()
+
+        # Return info with original filename for user download
+        original_name = file.filename.replace('.pdf', '')
+        download_filename = f"compressed_{original_name}.pdf"
 
         return {
             "message": "PDF compressed successfully",
-            "filename": output_filename,
-            "download_url": f"/download/{output_filename}",
+            "filename": output_filename,  # UUID filename for security
+            "download_url": f"/download/{output_filename}?name={download_filename}",
             "stats": {
                 "original_size_mb": round(original_size / (1024 * 1024), 2),
                 "compressed_size_mb": round(compressed_size / (1024 * 1024), 2),
@@ -82,22 +92,42 @@ async def convert_pdf(file: UploadFile = File(...)):
         # Clean up on error
         if upload_path.exists():
             upload_path.unlink()
+        if output_path.exists():
+            output_path.unlink()
         raise HTTPException(status_code=500, detail=f"Compression failed: {str(e)}")
 
 
+def delete_file(file_path: Path):
+    """Background task to delete file after download"""
+    try:
+        if file_path.exists():
+            file_path.unlink()
+            print(f"✓ Deleted file: {file_path.name}")
+    except Exception as e:
+        print(f"✗ Error deleting file {file_path.name}: {e}")
+
+
 @app.get("/download/{filename}")
-async def download_file(filename: str):
+async def download_file(filename: str, name: str = None, background_tasks: BackgroundTasks = None):
     """
-    Download the converted booklet PDF.
+    Download the compressed PDF.
+    File is automatically deleted after download for security.
     """
     file_path = OUTPUT_DIR / filename
 
     if not file_path.exists():
         raise HTTPException(status_code=404, detail="File not found")
 
+    # Use provided name or default to filename
+    download_name = name if name else filename
+
+    # Schedule file deletion after response is sent
+    if background_tasks:
+        background_tasks.add_task(delete_file, file_path)
+
     return FileResponse(
         path=file_path,
-        filename=filename,
+        filename=download_name,
         media_type="application/pdf"
     )
 
