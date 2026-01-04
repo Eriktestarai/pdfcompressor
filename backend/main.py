@@ -184,6 +184,7 @@ async def convert_to_booklet(file: UploadFile = File(...)):
                 "booklet_size_mb": round(booklet_size / (1024 * 1024), 2),
                 "reduction_percent": round(reduction, 1),
                 "pages": stats["pages"],
+                "sheets": stats["sheets"],
                 "format": stats["format"]
             }
         }

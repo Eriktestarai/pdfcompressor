@@ -197,7 +197,8 @@ function App() {
                 {mode === 'booklet' ? (
                   <>
                     <p>📦 {stats.original_size_mb} MB → {stats.booklet_size_mb} MB</p>
-                    <p>📄 {stats.pages} sidor • {stats.format}</p>
+                    <p>📄 {stats.pages} sidor → {stats.sheets} ark (dubbelsidig)</p>
+                    <p>📖 {stats.format}</p>
                     <p>🔽 {stats.reduction_percent}% minskning</p>
                   </>
                 ) : (
