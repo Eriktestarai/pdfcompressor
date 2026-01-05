@@ -1,24 +1,41 @@
-# 🗜️ PDF Komprimering
+# 📚 Gemini Booklet Maker
 
-En enkel och säker webbapplikation som komprimerar PDF:er till mycket mindre filstorlekar.
+En kraftfull webbapplikation för att bearbeta Gemini Storybook PDF:er - komprimera, dela spreads och skapa utskriftsklara booklets.
 
 ## 🎯 Syfte
 
-Komprimera stora PDF-filer snabbt och enkelt. Verktyget kan minska filstorleken med upp till 99% samtidigt som alla sidor och visuellt innehåll bevaras.
+Ursprungligen utvecklad för att hantera stora Google Gemini Storybook-PDF:er (ofta 200+ MB), men fungerar med vilken PDF som helst.
 
-**Exempel:** 200 MB → 2-3 MB (98-99% minskning)
+**Tre huvudfunktioner:**
+1. 🗜️ **Komprimera** - Reducera filstorlek med upp till 99%
+2. ✂️ **Dela Spreads** - Konvertera spreads till individuella A4-sidor (som StoryJar.app)
+3. 📖 **Skapa Booklet** - Skapa utskriftsklara saddle-stitch booklets
 
-*Ursprungligen utvecklad för Google Gemini Storybook-PDF:er, men fungerar med vilken PDF som helst.*
+**Exempel:** 200 MB Gemini Storybook → 2-3 MB komprimerad eller booklet redo för utskrift!
 
 ## ✨ Funktioner
 
-- 📤 **Drag-and-drop** eller filuppladdning
-- 🗜️ **Kraftfull komprimering** - reducerar stora PDF:er med upp till 99%
-- 🖼️ **Bevarar alla sidor** i original ordning
-- 📊 **Visar statistik** - original storlek, komprimerad storlek, minskning i %
-- 💾 **Ladda ner direkt** som komprimerad PDF
-- 🔒 **Säker** - filer raderas automatiskt efter nedladdning
-- 🎨 **Snygg UI** med modern design
+### 🗜️ PDF Komprimering
+- Reducerar stora PDF:er med upp till 99%
+- Bevarar alla sidor i original ordning
+- Visar statistik (original storlek, komprimerad storlek, minskning i %)
+
+### ✂️ Dela Spreads (Split Spreads)
+- Konverterar Gemini Storybook spreads till individuella A4-sidor
+- En bild ELLER text per sida (precis som StoryJar.app)
+- Perfekt för vidare bearbetning eller e-läsare
+
+### 📖 Skapa Booklet
+- Skapar utskriftsklar saddle-stitch booklet
+- Automatisk sidrotation för dubbelsidig utskrift
+- Skriv ut, vik, häfta - färdig bok!
+- Följer standard som kopiatorer använder
+
+### Övriga funktioner
+- 📤 Drag-and-drop eller filuppladdning
+- 💾 Ladda ner direkt
+- 🔒 Säker - filer raderas automatiskt efter nedladdning
+- 📱 Responsiv design för mobil och desktop
 
 ## 🏗️ Arkitektur
 
@@ -73,13 +90,32 @@ Frontend körs på: `http://localhost:3000`
 
 ## 📖 Användning
 
-1. **Starta både backend och frontend**
-2. **Öppna** `http://localhost:3000` i din webbläsare
-3. **Ladda upp** din PDF (drag-and-drop eller klicka)
-4. **Klicka** på "Komprimera PDF"
-5. **Ladda ner** din komprimerade PDF
-
 **Publikt tillgänglig:** https://pdfcompressor3.netlify.app/
+
+### 🗜️ Komprimera PDF
+1. Välj "Komprimera" läge
+2. Ladda upp din PDF
+3. Klicka "Komprimera PDF"
+4. Ladda ner komprimerad fil
+
+### ✂️ Dela Spreads
+1. Välj "Dela Spreads" läge
+2. Ladda upp Gemini Storybook PDF
+3. Klicka "Dela Spreads"
+4. Ladda ner PDF med individuella A4-sidor
+
+### 📖 Skapa Booklet
+1. Välj "Skapa Booklet" läge
+2. Ladda upp Gemini Storybook PDF (rekommenderat: komprimera först om >50 MB)
+3. Klicka "Skapa Booklet"
+4. Ladda ner booklet
+5. Skriv ut dubbelsidig (flip on long edge)
+6. Vik i mitten och häfta - färdig bok!
+
+**Lokalt (utveckling):**
+1. Starta både backend och frontend
+2. Öppna `http://localhost:3000`
+3. Följ stegen ovan
 
 ## 🔧 Hur det fungerar
 
@@ -111,7 +147,7 @@ Frontend körs på: `http://localhost:3000`
 - Modern CSS - Gradient design
 
 **Deployment:**
-- Backend: Render (https://pdfcompressor-backend.onrender.com)
+- Backend: Railway (https://web-production-5fc1f.up.railway.app)
 - Frontend: Netlify (https://pdfcompressor3.netlify.app)
 
 ## 🎨 Anpassningar

@@ -415,3 +415,75 @@ footer {
   color: #4a5568;
   font-size: 0.95rem;
 }
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .app {
+    padding: 1rem;
+  }
+
+  header h1 {
+    font-size: 2rem;
+  }
+
+  header p {
+    font-size: 1rem;
+  }
+
+  .mode-selector {
+    gap: 0.5rem;
+    padding: 0.4rem;
+  }
+
+  .mode-btn {
+    padding: 0.6rem 0.8rem;
+    font-size: 0.85rem;
+  }
+
+  .mode-description {
+    font-size: 0.85rem;
+  }
+
+  .drop-zone {
+    padding: 2rem 1rem;
+  }
+
+  .icon {
+    width: 48px;
+    height: 48px;
+  }
+
+  .convert-btn {
+    font-size: 1rem;
+    padding: 0.9rem 1.5rem;
+  }
+
+  .stats p {
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 480px) {
+  header h1 {
+    font-size: 1.75rem;
+  }
+
+  .mode-selector {
+    gap: 0.4rem;
+    padding: 0.3rem;
+  }
+
+  .mode-btn {
+    padding: 0.5rem 0.5rem;
+    font-size: 0.75rem;
+    white-space: nowrap;
+  }
+
+  .drop-zone {
+    padding: 1.5rem 0.75rem;
+  }
+
+  .drop-zone p {
+    font-size: 1rem;
+  }
+}
