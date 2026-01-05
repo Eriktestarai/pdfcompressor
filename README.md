@@ -8,7 +8,7 @@ Ursprungligen utvecklad för att hantera stora Google Gemini Storybook-PDF:er (o
 
 **Tre huvudfunktioner:**
 1. 🗜️ **Komprimera** - Reducera filstorlek med upp till 99%
-2. ✂️ **Dela Spreads** - Konvertera spreads till individuella A4-sidor (som StoryJar.app)
+2. ✂️ **Dela Spreads** - Konvertera spreads till individuella A4-sidor
 3. 📖 **Skapa Booklet** - Skapa utskriftsklara saddle-stitch booklets
 
 **Exempel:** 200 MB Gemini Storybook → 2-3 MB komprimerad eller booklet redo för utskrift!
@@ -22,7 +22,7 @@ Ursprungligen utvecklad för att hantera stora Google Gemini Storybook-PDF:er (o
 
 ### ✂️ Dela Spreads (Split Spreads)
 - Konverterar Gemini Storybook spreads till individuella A4-sidor
-- En bild ELLER text per sida (precis som StoryJar.app)
+- En bild ELLER text per sida
 - Perfekt för vidare bearbetning eller e-läsare
 
 ### 📖 Skapa Booklet
