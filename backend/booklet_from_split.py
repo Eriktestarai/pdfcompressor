@@ -29,8 +29,9 @@ def create_booklet_from_split(input_path, output_path):
 
     print(f"Split PDF has {total_pages} pages")
 
-    # Pad to multiple of 4 for saddle-stitch
-    pages_needed = total_pages
+    # Pad to multiple of 4 for saddle-stitch, minimum 24 pages (12 booklet pages)
+    # This matches online2pdf.com behavior
+    pages_needed = max(24, total_pages)
     while pages_needed % 4 != 0:
         pages_needed += 1
 
