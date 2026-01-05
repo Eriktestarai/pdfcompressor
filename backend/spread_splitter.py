@@ -74,12 +74,6 @@ def split_gemini_spreads(input_path, output_path, quality=85, max_dimension=2000
 
             individual_page_count += 1
 
-            # Add blank page after cover (inside of front cover)
-            print(f"  Adding blank page (inside of cover)")
-            blank_page = output_pdf.new_page(width=595, height=842)
-            # Page is blank - no image inserted
-            individual_page_count += 1
-
         else:
             # Split spread in half
             width, height = img_compressed.size
