@@ -125,7 +125,7 @@ function App() {
               {mode === 'compress' ? (
                 <p>Minska PDF-filstorlek med upp till 99%</p>
               ) : mode === 'split' ? (
-                <p>Dela Gemini Storybook spreads → en bild/text per A4-sida (som StoryJar)</p>
+                <p>Dela Gemini Storybook spreads → en bild/text per A4-sida</p>
               ) : (
                 <p>Skapa utskriftsklar booklet → skriv ut dubbelsidig, vik, häfta!</p>
               )}
