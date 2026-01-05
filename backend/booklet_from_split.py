@@ -77,7 +77,7 @@ def create_booklet_from_split(input_path, output_path):
         left_idx += 1
 
         if left_idx <= right_idx:
-            page_pairs.append((left_idx, right_idx))  # [second, second-last]
+            page_pairs.append((right_idx, left_idx))  # [second-last, second] - swapped for correct rotation
             left_idx += 1
             right_idx -= 1
 
