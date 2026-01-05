@@ -60,7 +60,7 @@ function App() {
       '/convert'
 
     try {
-      const response = await fetch(`https://pdfcompressor-backend.onrender.com${endpoint}`, {
+      const response = await fetch(`https://web-production-5fc1f.up.railway.app${endpoint}`, {
         method: 'POST',
         body: formData,
       })
@@ -71,7 +71,7 @@ function App() {
       }
 
       const data = await response.json()
-      setDownloadUrl(`https://pdfcompressor-backend.onrender.com${data.download_url}`)
+      setDownloadUrl(`https://web-production-5fc1f.up.railway.app${data.download_url}`)
       setStats(data.stats)
     } catch (err) {
       setError(err.message)
