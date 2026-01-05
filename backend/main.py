@@ -8,6 +8,7 @@ from pathlib import Path
 from pdf_compressor import compress_pdf
 from booklet_creator import create_booklet_from_gemini
 from spread_splitter import split_gemini_spreads
+from booklet_from_split import create_booklet_from_split
 import uuid
 
 app = FastAPI(title="PDF Compressor")
@@ -142,7 +143,7 @@ async def download_file(filename: str, name: str = None, background_tasks: Backg
 async def convert_to_booklet(file: UploadFile = File(...)):
     """
     Upload a Gemini Storybook PDF and convert it to a printable booklet format.
-    Each spread becomes one A4 landscape page, compressed and ready for printing.
+    Process: Split spreads → Create saddle-stitch booklet
     Files are automatically deleted after download for security.
     """
     if not file.filename.endswith('.pdf'):
@@ -151,9 +152,11 @@ async def convert_to_booklet(file: UploadFile = File(...)):
     # Generate unique filename using UUID for security
     unique_id = str(uuid.uuid4())
     upload_filename = f"{unique_id}_upload.pdf"
+    split_filename = f"{unique_id}_split.pdf"
     output_filename = f"{unique_id}_booklet.pdf"
 
     upload_path = UPLOAD_DIR / upload_filename
+    split_path = OUTPUT_DIR / split_filename
     output_path = OUTPUT_DIR / output_filename
 
     # Save uploaded file
@@ -161,16 +164,20 @@ async def convert_to_booklet(file: UploadFile = File(...)):
         shutil.copyfileobj(file.file, buffer)
 
     try:
-        # Create booklet
-        stats = create_booklet_from_gemini(str(upload_path), str(output_path), quality=85)
+        # Step 1: Split spreads
+        split_stats = split_gemini_spreads(str(upload_path), str(split_path), quality=85)
+
+        # Step 2: Create booklet from split pages
+        booklet_stats = create_booklet_from_split(str(split_path), str(output_path))
 
         # Get file sizes for reporting
         original_size = upload_path.stat().st_size
         booklet_size = output_path.stat().st_size
         reduction = 100 * (1 - booklet_size / original_size)
 
-        # Clean up upload immediately
+        # Clean up temporary files immediately
         upload_path.unlink()
+        split_path.unlink()
 
         # Return info with original filename for user download
         original_name = file.filename.replace('.pdf', '')
@@ -184,9 +191,10 @@ async def convert_to_booklet(file: UploadFile = File(...)):
                 "original_size_mb": round(original_size / (1024 * 1024), 2),
                 "booklet_size_mb": round(booklet_size / (1024 * 1024), 2),
                 "reduction_percent": round(reduction, 1),
-                "pages": stats["pages"],
-                "sheets": stats["sheets"],
-                "format": stats["format"]
+                "original_pages": split_stats["original_pages"],
+                "booklet_pages": booklet_stats["booklet_pages"],
+                "sheets": booklet_stats["sheets"],
+                "format": booklet_stats["format"]
             }
         }
 
@@ -194,6 +202,8 @@ async def convert_to_booklet(file: UploadFile = File(...)):
         # Clean up on error
         if upload_path.exists():
             upload_path.unlink()
+        if split_path.exists():
+            split_path.unlink()
         if output_path.exists():
             output_path.unlink()
         raise HTTPException(status_code=500, detail=f"Booklet creation failed: {str(e)}")

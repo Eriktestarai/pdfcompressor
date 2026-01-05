@@ -127,7 +127,7 @@ function App() {
               ) : mode === 'split' ? (
                 <p>Dela Gemini Storybook spreads → en bild/text per A4-sida (som StoryJar)</p>
               ) : (
-                <p>Skapa en utskriftsklar booklet från Gemini Storybook (A4 landscape)</p>
+                <p>Skapa utskriftsklar booklet → skriv ut dubbelsidig, vik, häfta!</p>
               )}
             </div>
 
@@ -220,7 +220,8 @@ function App() {
                 {mode === 'booklet' ? (
                   <>
                     <p>📦 {stats.original_size_mb} MB → {stats.booklet_size_mb} MB</p>
-                    <p>📄 {stats.pages} sidor → {stats.sheets} ark (dubbelsidig)</p>
+                    <p>📄 {stats.original_pages} spreads → {stats.booklet_pages} booklet-sidor</p>
+                    <p>📋 {stats.sheets} fysiska ark (skriv ut dubbelsidig)</p>
                     <p>📖 {stats.format}</p>
                     <p>🔽 {stats.reduction_percent}% minskning</p>
                   </>
