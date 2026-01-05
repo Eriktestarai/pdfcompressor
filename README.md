@@ -202,9 +202,9 @@ Fri att använda och modifiera!
 ## 🔒 Säkerhet
 
 - **UUID-filnamn**: Slumpmässiga filnamn gör det omöjligt att gissa URL:er
-- **Automatisk radering**: Filer raderas direkt efter nedladdning
-- **Ephemeral storage**: Render's container-omstarter rensar temp-mappen
-- **Ingen persistent lagring**: Inga filer sparas permanent
+- **Automatisk radering**: Filer raderas direkt efter nedladdning (BackgroundTasks)
+- **Ephemeral storage**: Railway's containers använder tillfällig lagring - filer försvinner vid restart/redeploy
+- **Ingen persistent lagring**: Inga filer sparas permanent (ingen Volumes konfigurerad)
 
 ## 📊 Testresultat
 
