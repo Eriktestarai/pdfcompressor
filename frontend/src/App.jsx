@@ -261,7 +261,7 @@ function App() {
       </main>
 
       <footer>
-        <p>PDF Komprimering</p>
+        <p>Skapad av Erik Bjurström</p>
       </footer>
     </div>
   )
